@@ -24,3 +24,30 @@ logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",  # /// шаблон вывода логов: время - имя логгера - уровень - сообщение
     level=logging.INFO                                              # /// записывать сообщения уровня INFO и выше (INFO, WARNING, ERROR)
 )
+
+BOT_TOKEN = "8431004691:AAG4ApIuiN5vAC2-q7mKLHNRq5GHJwXxQ0s"        # /// Токен от @BotFather
+
+WELCOME, SECOND_STEP = range(2)                                     # /// WELCOME = 0, SECOND_STEP = 1
+
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    welcome_text = """
+        Добро пожаловать в нашего бота!
+    Это приветственное сообщение c основной информацией o боте.
+    Нажмите 'Далее' чтобы продолжить или 'Отмена' чтобы выйти.
+    """
+    keyboard = [
+        ["Далее"]
+        ["Отмена"]
+    ]
+
+    reply_markup = ReplyKeyboardMarkup(
+        keyboard,                       # /// keyboard - наш массив кнопок,   
+        resize_keyboard=True            # /// resize_keyboard=True - автоматически подгонять размер кнопок
+    )   
+
+    await update.message.reply_text(    # /// await - ждем завершения отправки сообщения, update.message.reply_text() - отвечает на сообщение пользователя
+        welcome_text,                   # /// welcome_text - текст сообщения
+        reply_markup=reply_markup       # /// reply_markup=reply_markup - прикрепляем клавиатуру с кнопками
+    )
+
+    return WELCOME                      # /// Возвращаем состояние WELCOME, указывая что диалог перешел в этап приветствия.
