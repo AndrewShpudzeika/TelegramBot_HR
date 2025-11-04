@@ -29,7 +29,8 @@ BOT_TOKEN = "8431004691:AAG4ApIuiN5vAC2-q7mKLHNRq5GHJwXxQ0s"        # /// Ток
 
 WELCOME, SECOND_STEP = range(2)                                     # /// WELCOME = 0, SECOND_STEP = 1
 
-async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+#/// обработчик команды /start
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int: # /// update - информационный объект, context - объект для хранения данных между вызовами функций, -> int - функция возвращает целое число (состояние диалога)
     welcome_text = """
         Добро пожаловать в нашего бота!
     Это приветственное сообщение c основной информацией o боте.
@@ -50,4 +51,31 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         reply_markup=reply_markup       # /// reply_markup=reply_markup - прикрепляем клавиатуру с кнопками
     )
 
-    return WELCOME                      # /// Возвращаем состояние WELCOME, указывая что диалог перешел в этап приветствия.
+    return WELCOME                      # /// Возвращаем состояние WELCOME, указывая что диалог перешел в этап приветствия
+
+# /// Функция для обработки выбора пользователя
+async def welcome_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:   # /// update - информационный объект, context - объект для хранения данных между вызовами функций, -> int - функция возвращает целое число (состояние диалога)
+    user_choice = update.message.text   # /// Получаем текст сообщения, которое отправил пользователь
+    if user_choice == "Далее":
+        second_text = """
+            Это второе сообщение!
+        Здесь может быть дополнительная информация, 
+        инструкции или следующий шаг процесса.
+        """
+    keyboard = [
+        ["Далее"],
+        ["В начало..."]
+    ]
+
+    reply_markup = ReplyKeyboardMarkup(
+        keyboard,                       # /// Массив кнопок                       
+        resize_keyboard=True            # /// Подгоняем размер кнопок
+    )
+
+    await update.message.reply_text(
+        second_text,                    # /// Текст сообщения для второй страницы
+        reply_markup=reply_markup       # /// Крепим клавиатуру с кнопками
+    )
+
+    return SECOND_STEP                  # /// Переходим в состояние SECOND_STEP (второй шаг диалога)
+
