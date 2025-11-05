@@ -115,14 +115,36 @@ async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
 
 
 # /// Функция-оброботчик неизвестных обращений
-async def unknown_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+async def handle_unknown(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     await update.message.reply_text(        # /// Отправляем сообщение
         "Используйте кнопки для навигации под чатом или напишите в чат: /start"
     )
 
 
+# /// Функция main() - главная функция бота
 def main() -> None:
     application = Application.builder().token(BOT_TOKEN).build()    # /// Создаем объект Application, Application.builder() - начинаем сборку приложения, .token(BOT_TOKEN) - передаем токен бота, .build() - завершаем сборку и создаем объект
+    conv_handler = ConversationHandler(
+        entry_points=[CommandHandler("start", start)],              # /// entry_points - точки входа в диалог (команда /start вызывает функцию start)
+    
+        states={
+            WELCOME: [
+                MessageHandler(filters.TEXT(["Далее", "Отмена"]), welcome_handler)  # /// В состоянии WELCOME обрабатываем только тексты "Далее" и "Отмена" функцией welcome_handler
+            ],
+            SECOND_STEP: [
+                MessageHandler(filters.TEXT(["Назад","В начало..."]), second_step_handler)  # /// В состоянии SECOND_STEP обрабатываем только тексты "Назад" и "В начало..." функцией second_step_handler
+            ]
+        },
+
+        fallbacks=[CommandHandler("cancel", cancel)]    # /// Обработчик для выхода из диалога 
+    )
+    application.add_handler(conv_handler)   # /// Добавляем обработчик диалога в приложение(application)
+    application.add_handler(MessageHandler(filters.ALL, handle_unknown))    # /// Добавляем обработчик для всех остальных дилогов в приложение(application)
+    print("Bot is starting...")
+    application.run_polling()   # /// Запускаем приложение в режиме поллинг(Постоянный опрос сервера Telegram)
+
+if __name__ == "__main__":
+    main()
 
         
 
