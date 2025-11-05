@@ -32,13 +32,9 @@ WELCOME, SECOND_STEP = range(2)                                     # /// WELCOM
 
 #/// обработчик команды /start
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int: # /// update - информационный объект, context - объект для хранения данных между вызовами функций, -> int - функция возвращает целое число (состояние диалога)
-    welcome_text = """
-        Добро пожаловать в нашего бота!
-    Это приветственное сообщение c основной информацией o боте.
-    Нажмите 'Далее' чтобы продолжить или 'Отмена' чтобы выйти.
-    """
+    welcome_text = "\t Добро пожаловать в нашего бота! \nЭто приветственное сообщение c основной информацией o боте. \nНажмите 'Далее' чтобы продолжить или 'Отмена' чтобы выйти."
     keyboard = [
-        ["Далее"]
+        ["Далее"],
         ["Отмена"]
     ]
 
@@ -59,11 +55,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int: # //
 async def welcome_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:   # /// update - информационный объект, context - объект для хранения данных между вызовами функций, -> int - функция возвращает целое число (состояние диалога)
     user_choice = update.message.text   # /// Получаем текст сообщения, которое отправил пользователь
     if user_choice == "Далее":
-        second_text = """
-            Это второе сообщение!
-        Здесь может быть дополнительная информация, 
-        инструкции или следующий шаг процесса.
-        """
+        second_text = "\tЭто второе сообщение! \nЗдесь может быть дополнительная информация, инструкции или следующий шаг процесса."
         keyboard = [
             ["Назад"],
             ["В начало..."]
@@ -81,8 +73,9 @@ async def welcome_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
 
         return SECOND_STEP                  # /// Переходим в состояние SECOND_STEP (второй шаг диалога)
 
-    elif user_choice == "В начало...":      # /// Проверка на ввод
-        await reply_markup.message.reply_text(  # /// Отправляем сообщение о прерывании
+    elif user_choice == "Отмена":      # /// Проверка на ввод
+        await update.message.reply_text(  # /// Отправляем сообщение о прерывании
+            "Возврат в главное меню. Отправь /start чтобы начать занаво.",
             reply_markup=ReplyKeyboardRemove()  # /// Убираем клавиатуру
         )
     
@@ -98,6 +91,7 @@ async def second_step_handler(update: Update, context: ContextTypes.DEFAULT_TYPE
     
     elif user_choice == "В начало...":      # /// Проверка на ввод
         await update.message.reply_text(    # /// Отправляем сообщение
+            "Диалог завершен. Для начала нового диалога отправьте /start",
             reply_markup=ReplyKeyboardRemove()  # /// Убираем клавиатуру
         )
     
@@ -129,10 +123,10 @@ def main() -> None:
     
         states={
             WELCOME: [
-                MessageHandler(filters.TEXT(["Далее", "Отмена"]), welcome_handler)  # /// В состоянии WELCOME обрабатываем только тексты "Далее" и "Отмена" функцией welcome_handler
+                MessageHandler(filters.Text(["Далее", "Отмена"]), welcome_handler)  # /// В состоянии WELCOME обрабатываем только тексты "Далее" и "Отмена" функцией welcome_handler
             ],
             SECOND_STEP: [
-                MessageHandler(filters.TEXT(["Назад","В начало..."]), second_step_handler)  # /// В состоянии SECOND_STEP обрабатываем только тексты "Назад" и "В начало..." функцией second_step_handler
+                MessageHandler(filters.Text(["Назад","В начало..."]), second_step_handler)  # /// В состоянии SECOND_STEP обрабатываем только тексты "Назад" и "В начало..." функцией second_step_handler
             ]
         },
 
