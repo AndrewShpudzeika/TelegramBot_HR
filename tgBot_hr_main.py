@@ -29,6 +29,7 @@ BOT_TOKEN = "8431004691:AAG4ApIuiN5vAC2-q7mKLHNRq5GHJwXxQ0s"        # /// Ток
 
 WELCOME, SECOND_STEP = range(2)                                     # /// WELCOME = 0, SECOND_STEP = 1
 
+
 #/// обработчик команды /start
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int: # /// update - информационный объект, context - объект для хранения данных между вызовами функций, -> int - функция возвращает целое число (состояние диалога)
     welcome_text = """
@@ -53,6 +54,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int: # //
 
     return WELCOME                      # /// Возвращаем состояние WELCOME, указывая что диалог перешел в этап приветствия
 
+
 # /// Функция для обработки выбора пользователя
 async def welcome_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:   # /// update - информационный объект, context - объект для хранения данных между вызовами функций, -> int - функция возвращает целое число (состояние диалога)
     user_choice = update.message.text   # /// Получаем текст сообщения, которое отправил пользователь
@@ -62,20 +64,65 @@ async def welcome_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
         Здесь может быть дополнительная информация, 
         инструкции или следующий шаг процесса.
         """
-    keyboard = [
-        ["Далее"],
-        ["В начало..."]
-    ]
+        keyboard = [
+            ["Назад"],
+            ["В начало..."]
+        ]
 
-    reply_markup = ReplyKeyboardMarkup(
-        keyboard,                       # /// Массив кнопок                       
-        resize_keyboard=True            # /// Подгоняем размер кнопок
+        reply_markup = ReplyKeyboardMarkup(
+            keyboard,                       # /// Массив кнопок                       
+            resize_keyboard=True            # /// Подгоняем размер кнопок
+        )
+
+        await update.message.reply_text(
+            second_text,                    # /// Текст сообщения для второй страницы
+            reply_markup=reply_markup       # /// Крепим клавиатуру с кнопками
+        )
+
+        return SECOND_STEP                  # /// Переходим в состояние SECOND_STEP (второй шаг диалога)
+
+    elif user_choice == "В начало...":      # /// Проверка на ввод
+        await reply_markup.message.reply_text(  # /// Отправляем сообщение о прерывании
+            reply_markup=ReplyKeyboardRemove()  # /// Убираем клавиатуру
+        )
+    
+        return ConversationHandler.END      # /// Заврешаем диалог
+
+
+# /// Функция для обработки SECOND_STEP
+async def second_step_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    user_choice = update.message.text       # /// Получаем текст сообщения от пользователя
+
+    if user_choice == "Назад":        # /// Проверка на ввод
+        return await start(update, context) # /// Вызываем функцию start()
+    
+    elif user_choice == "В начало...":      # /// Проверка на ввод
+        await update.message.reply_text(    # /// Отправляем сообщение
+            reply_markup=ReplyKeyboardRemove()  # /// Убираем клавиатуру
+        )
+    
+        return ConversationHandler.END      # /// Завершаем диалог
+    
+
+# /// Функция для отмены диалога
+async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    await update.message.reply_text(        # /// Отправляем сообщение
+        "Диалог завершен. Чтобы продолжить введите в чат: /start",
+        reply_markup=ReplyKeyboardRemove()  # /// Убираем клавиатуру
     )
 
-    await update.message.reply_text(
-        second_text,                    # /// Текст сообщения для второй страницы
-        reply_markup=reply_markup       # /// Крепим клавиатуру с кнопками
+    return ConversationHandler.END
+
+
+# /// Функция-оброботчик неизвестных обращений
+async def unknown_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    await update.message.reply_text(        # /// Отправляем сообщение
+        "Используйте кнопки для навигации под чатом или напишите в чат: /start"
     )
 
-    return SECOND_STEP                  # /// Переходим в состояние SECOND_STEP (второй шаг диалога)
+
+def main() -> None:
+    application = Application.builder().token(BOT_TOKEN).build()    # /// Создаем объект Application, Application.builder() - начинаем сборку приложения, .token(BOT_TOKEN) - передаем токен бота, .build() - завершаем сборку и создаем объект
+
+        
 
