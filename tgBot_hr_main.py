@@ -27,7 +27,7 @@ logging.basicConfig(
 
 BOT_TOKEN = "8431004691:AAG4ApIuiN5vAC2-q7mKLHNRq5GHJwXxQ0s"        # /// Токен от @BotFather
 
-WELCOME, SECOND_STEP, ASK_INFO = range(3)                                     # /// WELCOME = 0, SECOND_STEP = 1
+WELCOME, SECOND_STEP, ASK_INFO, ASK_INFO_2 = range(4)                                     # /// WELCOME = 0, SECOND_STEP = 1
 
 
 #/// обработчик команды /start
@@ -107,18 +107,16 @@ async def second_step_handler(update: Update, context: ContextTypes.DEFAULT_TYPE
 
     if user_choice == "Какая?":        # /// Проверка на ввод
         await update.message.reply_text("\
-Чтобы команда быстрее тебя узнала — расскажи пару слов о себе! 😊\n\
+Вышлите, пожалуйста, в ответном сообщении свою фотографию и небольшую самопрезентацию.\
+Мы разместим эту информацию в корпоративном чате, чтобы представить Вас команде. 😊 \n\
 Например:\n\
-— Чем увлекаешься вне работы?\n\
-— Какой у тебя опыт?\n\
-— Что тебя вдохновляет?\n\
-Чтобы подготовить для тебя корпоративную почту и доступы, пришли, пожалуйста:\n\
-— ФИО латиницей (Ivanov Ivan)\n\
-— Дата рождения (в формате ДД.ММ.ГГГГ)\n\
+Всем привет! Меня зовут Ян, я уже 15 лет в IT. Начинал как бизнес-аналитик, затем стал менеджером проектов.\
+Работая во франчайзи, я активно взаимодействовал с крупнейшими предприятиями РБ.\
+В свободное время я увлекаюсь футболом, хайкингом и спортивным ориентированием.\
+Люблю скорость и с удовольствием гоняю с друзьями на карте. Рад присоединиться к Команде!\
             ",
         reply_markup=ReplyKeyboardRemove(),
         )
-        # return await start(update, context) # /// Вызываем функцию start()
         return ASK_INFO
     
     elif user_choice == "В начало...":      # /// Проверка на ввод
@@ -146,7 +144,7 @@ async def ask_info_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -
     if "info_text" in context.user_data and "photo_id" in context.user_data:
         username = message.from_user.username
         uid = message.from_user.id
-        target_chat_id = 535431808
+        target_chat_id = 7196767339 # 7196767339 - HR, 535431808 - me
 
         await context.bot.send_message(
             chat_id=target_chat_id,
@@ -158,13 +156,22 @@ async def ask_info_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -
             photo=context.user_data["photo_id"]
         )
 
+        keyboard = [
+            ["Какой?"]
+        ]
+
+        reply_markup = ReplyKeyboardMarkup(
+            keyboard,                       # /// Массив кнопок                       
+            resize_keyboard=True            # /// Подгоняем размер кнопок
+        )
+
         await message.reply_text(
-            "Спасибо! Всё отправлено HR 😊\nЧтобы начать заново — /start",
-            reply_markup=ReplyKeyboardRemove()
+            "Спасибо! Всё отправлено HR 😊\nИ ещё один технический момент",
+            reply_markup=reply_markup
         )
 
         context.user_data.clear()
-        return ConversationHandler.END
+        return ASK_INFO_2
     
     else:
         await message.reply_text(
@@ -199,6 +206,61 @@ async def ask_info_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -
 #     return ConversationHandler.END
 
 # /// Функция для отмены диалога
+
+
+async def ask_info_2_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    user_choice = update.message.text
+
+    if user_choice == "Какой?":
+        context.user_data.clear()
+        await update.message.reply_text(
+            "Чтобы мы могли подготовить к Вашему выходу корпоративную почту и доступы, напишите:\n" \
+            "🔹 ФИО латиницей\n" \
+            "🔹 Дата рождения (в формате ДД.ММ.ГГГГ)",
+            reply_markup=ReplyKeyboardRemove(),
+        )
+        return ASK_INFO_2
+    
+    context.user_data.clear()
+
+    message = update.message
+
+        # Сохраняем текст
+    if message.text:
+        context.user_data["info_text"] = message.text
+
+    if "info_text" in context.user_data:
+        username = message.from_user.username
+        uid = message.from_user.id
+        target_chat_id = 7196767339 # 7196767339 - HR, 535431808 - me
+
+    await context.bot.send_message(
+        chat_id=target_chat_id,
+        text=f"Дополнительная информация от @{username} (ID: {uid}):\n{context.user_data['info_text']}"
+    )
+
+    await update.message.reply_text(
+        "Спасибо! Всё отправлено HR 😊\n" \
+        "А теперь я расскажу несколько общих организационных моментов!\n\n" \
+        "Обед в нашей компании с 13.00 до 14.00. У нас есть кухня с холодильником, " \
+        "чайником, микроволновкой. Чай и кофе в офисе бесплатный и безлимитный.  " \
+        "А вот столовые приборы лучше принести свои. Кроме того, на территории БЦ Титан и " \
+        "рядом с ним есть много кафе и точек общепита.\n\n" \
+        "В компании нет строгого дресс-кода, мы руководствуемся нормами " \
+        "приличия и пониманием того, что мы приходим на работу в офис."
+    )
+
+    await update.message.reply_photo(
+        open("Picture1.png", "rb")
+    )
+
+    await update.message.reply_text(
+        "Чтобы начать общение нажмите /start :)"
+    )
+
+    return ConversationHandler.END
+        
+
 async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     await update.message.reply_text(        # /// Отправляем сообщение
         "Диалог завершен. Чтобы продолжить введите в чат: /start",
@@ -230,6 +292,9 @@ def main() -> None:
             ],
             ASK_INFO: [
                 MessageHandler(filters.TEXT | filters.PHOTO & ~filters.COMMAND, ask_info_handler)
+            ],
+            ASK_INFO_2: [
+                MessageHandler(filters.TEXT, ask_info_2_handler)
             ]
         },
 
