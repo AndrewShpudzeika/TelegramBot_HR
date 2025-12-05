@@ -32,13 +32,14 @@ WELCOME, SECOND_STEP, ASK_INFO = range(3)                                     # 
 
 #/// обработчик команды /start
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int: # /// update - информационный объект, context - объект для хранения данных между вызовами функций, -> int - функция возвращает целое число (состояние диалога)
-    welcome_text = "Привет👋\n\
-Мы рады, что ты с нами!\n\
-Важно: выйди на оформление в 10:00 по адресу: \
-г. Минск, пр-т Дзержинского, 104, БЦ «Титан», средняя башня (ст. метро «Петровщина»).\n\
-Мы уже подготовили для тебя рабочее место и приятный старт! ☕"
+    welcome_text = "Мы рады, что Вы приняли оффер и вскоре присоединитесь к команде.😊\n\
+В оговоренный день, будем ждать Вас на оформление в 10.00 по адресу:\
+г. Минск, пр-т Дзержинского, 104, БЦ «Титан», средняя башня (ст. метро «Петровщина»), 18 этаж.\n\
+Когда  будете внизу – позвоните HR-специалисту по номеру +375293670822, Вас встретят.\n\n\
+Сейчас я расскажу, какие документы взять с собой.\
+"
     keyboard = [
-        ["Далее"],
+        ["Давай!"],
         ["Отмена"]
     ]
 
@@ -58,23 +59,24 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int: # //
 # /// Функция для обработки выбора пользователя
 async def welcome_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:   # /// update - информационный объект, context - объект для хранения данных между вызовами функций, -> int - функция возвращает целое число (состояние диалога)
     user_choice = update.message.text   # /// Получаем текст сообщения, которое отправил пользователь
-    if user_choice == "Далее":
+    if user_choice == "Давай!":
         second_text = "\
 Пожалуйста, возьми с собой:\n\
 •	Фото (1 шт маленькая)\n\
-•	Паспорт\n\
-•	Страховая карточка ФСЗН (зеленая)\n\
+•	Паспорт / ID карта / Вид на жительство\n\
+•	Карточка соц.страхования (зеленая)\n\
 •	Дипломы\n\
 •	Трудовая книжка\n\
 •	Свидетельства о рождении детей (до 18 лет)\n\
 •	Справка с места учебы ребенка (если более 18 лет)\n\
 •	Сертификаты 1С (если есть)\n\
-•	Военный билет\n\
+•	Военный билет (если есть)\n\
 •	Счет БелВэб Банка (если есть).\n\
-Ближайший адрес банка к нашему офису пр-т Дзержинского, 122. Можно оставить онлайн-заявку AS.Yadkovskij@belveb.by\
+Ближайший адрес банка к нашему офису пр-т Дзержинского, 122. Можно оставить онлайн-заявку AS.Yadkovskij@belveb.by\n\n\
+У нас есть еще одна небольшая просьба 💙\
 "
         keyboard = [
-            ["О себе"],
+            ["Какая?"],
             ["В начало..."]
         ]
 
@@ -103,7 +105,7 @@ async def welcome_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
 async def second_step_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     user_choice = update.message.text       # /// Получаем текст сообщения от пользователя
 
-    if user_choice == "О себе":        # /// Проверка на ввод
+    if user_choice == "Какая?":        # /// Проверка на ввод
         await update.message.reply_text("\
 Чтобы команда быстрее тебя узнала — расскажи пару слов о себе! 😊\n\
 Например:\n\
@@ -111,7 +113,7 @@ async def second_step_handler(update: Update, context: ContextTypes.DEFAULT_TYPE
 — Какой у тебя опыт?\n\
 — Что тебя вдохновляет?\n\
 Чтобы подготовить для тебя корпоративную почту и доступы, пришли, пожалуйста:\n\
-— ФИО латиницей\n\
+— ФИО латиницей (Ivanov Ivan)\n\
 — Дата рождения (в формате ДД.ММ.ГГГГ)\n\
             ",
         reply_markup=ReplyKeyboardRemove(),
@@ -129,26 +131,72 @@ async def second_step_handler(update: Update, context: ContextTypes.DEFAULT_TYPE
 
 
 async def ask_info_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    user_text = update.message.text
-    username = update.message.from_user.username
-    uid = update.message.from_user.id
-
-    # Кому отправлять сообщение*
-    target_username = 7196767339 # 7196767339 - HR, 535431808 - me
-
-    message_to_send = f"Новая информация от @{username} (ID: {uid}):\n\n{user_text}"
-
-    try:
-        await context.bot.send_message(
-            chat_id=target_username,
-            text=message_to_send,      
-        )
-        await update.message.reply_text("Спасибо! Информация отправлена к HR!😊\nДиалог завершен. Чтобы продолжить введите в чат: /start")
-    except Exception as e:
-        await update.message.reply_text("Ошибка отпраавки")
-        print(e)
+    message = update.message
     
-    return ConversationHandler.END
+    # Сохраняем текст
+    if message.text:
+        context.user_data["info_text"] = message.text
+
+    # Сохраняем фото
+    if message.photo:
+        context.user_data["photo_id"] = message.photo[-1].file_id
+        await message.reply_text("Фото получено ✅")
+
+    # Если есть и текст, и фото — отправляем HR
+    if "info_text" in context.user_data and "photo_id" in context.user_data:
+        username = message.from_user.username
+        uid = message.from_user.id
+        target_chat_id = 535431808
+
+        await context.bot.send_message(
+            chat_id=target_chat_id,
+            text=f"Новая информация от @{username} (ID: {uid}):\n{context.user_data['info_text']}"
+        )
+
+        await context.bot.send_photo(
+            chat_id=target_chat_id,
+            photo=context.user_data["photo_id"]
+        )
+
+        await message.reply_text(
+            "Спасибо! Всё отправлено HR 😊\nЧтобы начать заново — /start",
+            reply_markup=ReplyKeyboardRemove()
+        )
+
+        context.user_data.clear()
+        return ConversationHandler.END
+    
+    else:
+        await message.reply_text(
+            "Отлично! Теперь пришлите вторую часть: фото и текст нужны оба 📌"
+        )
+        return ASK_INFO
+# async def ask_info_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+#     user_text = update.message.text
+#     user_photo = update.message.photo
+#     username = update.message.from_user.username
+#     uid = update.message.from_user.id
+
+#     # Кому отправлять сообщение*
+#     target_username = 535431808 # 7196767339 - HR, 535431808 - me
+
+#     message_to_send = f"Новая информация от @{username} (ID: {uid}):\n\n{user_text}"
+#     photo_to_send = f"photo {user_photo}"
+
+#     try:
+#         await context.bot.send_message(
+#             chat_id=target_username,
+#             text=message_to_send,  
+#         )
+#         await context.bot.send_photo(
+#             chat_id=target_username,
+#             photo=photo_to_send,
+#         )
+#         await update.message.reply_text("Спасибо! Информация отправлена к HR!😊\nДиалог завершен. Чтобы повторить введите в чат: /start")
+#     except Exception as e:
+#         await update.message.reply_text("Ошибка отправки")
+#         print(e)
+#     return ConversationHandler.END
 
 # /// Функция для отмены диалога
 async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
@@ -175,13 +223,13 @@ def main() -> None:
     
         states={
             WELCOME: [
-                MessageHandler(filters.Text(["Далее", "Отмена"]), welcome_handler)  # /// В состоянии WELCOME обрабатываем только тексты "Далее" и "Отмена" функцией welcome_handler
+                MessageHandler(filters.Text(["Давай!", "Отмена"]), welcome_handler)  # /// В состоянии WELCOME обрабатываем только тексты "Далее" и "Отмена" функцией welcome_handler
             ],
             SECOND_STEP: [
-                MessageHandler(filters.Text(["О себе","В начало..."]), second_step_handler)  # /// В состоянии SECOND_STEP обрабатываем только тексты "Назад" и "В начало..." функцией second_step_handler
+                MessageHandler(filters.Text(["Какая?","В начало..."]), second_step_handler)  # /// В состоянии SECOND_STEP обрабатываем только тексты "Назад" и "В начало..." функцией second_step_handler
             ],
             ASK_INFO: [
-                MessageHandler(filters.TEXT & ~filters.COMMAND, ask_info_handler)
+                MessageHandler(filters.TEXT | filters.PHOTO & ~filters.COMMAND, ask_info_handler)
             ]
         },
 
