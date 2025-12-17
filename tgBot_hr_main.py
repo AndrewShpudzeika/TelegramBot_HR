@@ -33,6 +33,8 @@ BOT_TOKEN = "8431004691:AAG4ApIuiN5vAC2-q7mKLHNRq5GHJwXxQ0s"        # /// Ток
 WELCOME, SECOND_STEP, ASK_INFO, ASK_INFO_2 = range(4)                                     # /// WELCOME = 0, SECOND_STEP = 1
 
 
+me = 535431808
+hr = 7196767339
 #/// обработчик команды /start
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int: # /// update - информационный объект, context - объект для хранения данных между вызовами функций, -> int - функция возвращает целое число (состояние диалога)
     welcome_text = "Мы рады, что Вы приняли оффер и вскоре присоединитесь к команде.😊\n\
@@ -148,7 +150,7 @@ async def ask_info_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -
     if "info_text" in context.user_data and "photo_id" in context.user_data:
         username = message.from_user.username
         uid = message.from_user.id
-        target_chat_id = 7196767339 # 7196767339 - HR, 535431808 - me
+        target_chat_id = hr # 7196767339 - HR, 535431808 - me
 
         await context.bot.send_message(
             chat_id=target_chat_id,
@@ -182,34 +184,6 @@ async def ask_info_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -
             "Отлично! Теперь пришлите вторую часть: фото и текст нужны оба 📌"
         )
         return ASK_INFO
-# async def ask_info_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-#     user_text = update.message.text
-#     user_photo = update.message.photo
-#     username = update.message.from_user.username
-#     uid = update.message.from_user.id
-
-#     # Кому отправлять сообщение*
-#     target_username = 535431808 # 7196767339 - HR, 535431808 - me
-
-#     message_to_send = f"Новая информация от @{username} (ID: {uid}):\n\n{user_text}"
-#     photo_to_send = f"photo {user_photo}"
-
-#     try:
-#         await context.bot.send_message(
-#             chat_id=target_username,
-#             text=message_to_send,  
-#         )
-#         await context.bot.send_photo(
-#             chat_id=target_username,
-#             photo=photo_to_send,
-#         )
-#         await update.message.reply_text("Спасибо! Информация отправлена к HR!😊\nДиалог завершен. Чтобы повторить введите в чат: /start")
-#     except Exception as e:
-#         await update.message.reply_text("Ошибка отправки")
-#         print(e)
-#     return ConversationHandler.END
-
-# /// Функция для отмены диалога
 
 
 async def ask_info_2_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
@@ -236,7 +210,7 @@ async def ask_info_2_handler(update: Update, context: ContextTypes.DEFAULT_TYPE)
     if "info_text" in context.user_data:
         username = message.from_user.username
         uid = message.from_user.id
-        target_chat_id = 7196767339 # 7196767339 - HR, 535431808 - me
+        target_chat_id = hr # 7196767339 - HR, 535431808 - me
 
     await context.bot.send_message(
         chat_id=target_chat_id,
@@ -245,8 +219,8 @@ async def ask_info_2_handler(update: Update, context: ContextTypes.DEFAULT_TYPE)
 
     keyboard_inline = InlineKeyboardMarkup([
             [InlineKeyboardButton("Первый", callback_data="Первый")],
-            [InlineKeyboardButton("Второй", callback_data="Второй")],
-            [InlineKeyboardButton("И напоследок 😊", callback_data="Третий")],
+            # [InlineKeyboardButton("Второй", callback_data="Второй")],
+            # [InlineKeyboardButton("И напоследок 😊", callback_data="Третий")],
         ]
     )
 
@@ -293,13 +267,19 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await query.message.reply_text(
             "Обед в нашей компании с 13.00 до 14.00. У нас есть кухня с холодильником, чайником, микроволновкой. " \
             "Чай и кофе в офисе бесплатный и безлимитный.  А вот столовые приборы лучше принести свои. Кроме того, " \
-            "на территории БЦ Титан и рядом с ним есть много кафе и точек общепита."
+            "на территории БЦ Титан и рядом с ним есть много кафе и точек общепита.",
+            reply_markup=InlineKeyboardMarkup([
+                [InlineKeyboardButton("Второй", callback_data="Второй")]
+            ])
         )
 
     elif query.data == "Второй":
         await query.message.reply_text(
             "В компании нет строгого дресс-кода, мы руководствуемся нормами приличия и пониманием " \
-            "того, что мы приходим на работу в офис."
+            "того, что мы приходим на работу в офис.",
+            reply_markup=InlineKeyboardMarkup([
+                [InlineKeyboardButton("И напоследок 😊", callback_data="Третий")]
+            ])
         )
 
     elif query.data == "Третий":
